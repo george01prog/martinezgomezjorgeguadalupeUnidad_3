@@ -5,6 +5,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryMovementController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
@@ -20,6 +22,10 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::middleware('admin')->group(function () {
         Route::resource('categories', CategoryController::class)->except(['index', 'show']);
         Route::resource('products', ProductController::class)->except(['index', 'show']);
+
+        // Usuarios: módulo exclusivo del administrador (sin show ni destroy)
+        Route::resource('users', UserController::class)->except(['show', 'destroy']);
+        Route::patch('users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
     });
 
     // Consulta: todos los usuarios autenticados
@@ -30,6 +36,12 @@ Route::middleware(['auth', 'active'])->group(function () {
     // No hay edición ni eliminación para conservar la trazabilidad.
     Route::resource('movements', InventoryMovementController::class)
         ->only(['index', 'create', 'store', 'show']);
+
+    // Reportes: consulta y exportación para todos los usuarios autenticados
+    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('reports/export/{format}', [ReportController::class, 'export'])
+        ->whereIn('format', ['csv', 'pdf'])
+        ->name('reports.export');
 });
 
 require __DIR__.'/auth.php';

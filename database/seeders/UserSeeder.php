@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
             ['email' => 'admin@inventario.test'],
             [
                 'name' => 'Administrador',
-                'password' => Hash::make('c'),
+                'password' => Hash::make('Admin12345'),
                 'role' => User::ROLE_ADMIN,
                 'is_active' => true,
             ]
@@ -27,6 +27,16 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('Usuario12345'),
                 'role' => User::ROLE_USER,
                 'is_active' => true,
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'inactivo@inventario.test'],
+            [
+                'name' => 'Usuario Inactivo',
+                'password' => Hash::make('Inactivo12345'),
+                'role' => User::ROLE_USER,
+                'is_active' => false,
             ]
         );
     }
