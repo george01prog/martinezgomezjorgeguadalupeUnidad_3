@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExternalProductLookupController;
 use App\Http\Controllers\InventoryMovementController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -20,6 +21,11 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Crear/editar/eliminar: solo admin (se registra primero para que
     // /products/create no sea interpretado como /products/{product})
     Route::middleware('admin')->group(function () {
+        Route::get('products/lookup/{barcode}', ExternalProductLookupController::class)
+            ->where('barcode', '[0-9]{8,14}')
+            ->middleware('throttle:10,1')
+            ->name('products.lookup');
+
         Route::resource('categories', CategoryController::class)->except(['index', 'show']);
         Route::resource('products', ProductController::class)->except(['index', 'show']);
 

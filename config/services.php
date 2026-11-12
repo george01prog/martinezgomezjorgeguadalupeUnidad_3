@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'inventory_api' => [
+        'token' => env('INVENTORY_API_TOKEN'),
+    ],
+
 ];

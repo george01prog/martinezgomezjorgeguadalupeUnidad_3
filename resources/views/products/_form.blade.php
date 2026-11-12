@@ -14,6 +14,14 @@
         <x-input-label for="sku" value="Código SKU *" />
         <x-text-input id="sku" name="sku" type="text" class="mt-1 block w-full uppercase"
                       :value="old('sku', $product->sku)" maxlength="50" required autofocus />
+        <button id="lookup-product" type="button"
+                data-url-template="{{ route('products.lookup', ['barcode' => '00000000']) }}"
+                class="mt-2 rounded-lg border border-indigo-200 px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50">
+            Buscar datos por código de barras
+        </button>
+        <p id="lookup-product-status" class="mt-1 text-xs text-slate-500" aria-live="polite">
+            Consulta gratuita en Open Food Facts para códigos de 8 a 14 dígitos.
+        </p>
         <x-input-error :messages="$errors->get('sku')" class="mt-2" />
     </div>
 
@@ -30,6 +38,48 @@
         </select>
         <x-input-error :messages="$errors->get('category_id')" class="mt-2" />
     </div>
+
+    <script>
+        (() => {
+            const button = document.getElementById('lookup-product');
+            const sku = document.getElementById('sku');
+            const status = document.getElementById('lookup-product-status');
+
+            if (!button || !sku || !status) return;
+
+            const isBarcode = value => /^\d{8,14}$/.test(value.trim());
+            const updateButton = () => {
+                button.disabled = !isBarcode(sku.value);
+            };
+
+            sku.addEventListener('input', updateButton);
+            updateButton();
+
+            button.addEventListener('click', async () => {
+                const barcode = sku.value.trim();
+                if (!isBarcode(barcode)) return;
+
+                button.disabled = true;
+                status.textContent = 'Consultando Open Food Facts...';
+
+                try {
+                    const url = button.dataset.urlTemplate.replace('00000000', encodeURIComponent(barcode));
+                    const response = await fetch(url, { headers: { Accept: 'application/json' } });
+                    const result = await response.json();
+
+                    if (!response.ok) throw new Error(result.message || 'No se pudo consultar el producto.');
+
+                    document.getElementById('name').value = result.name;
+                    document.getElementById('description').value = result.description || '';
+                    status.textContent = 'Datos encontrados. Verifica la información antes de guardar.';
+                } catch (error) {
+                    status.textContent = error.message || 'No se pudo consultar el servicio externo.';
+                } finally {
+                    updateButton();
+                }
+            });
+        })();
+    </script>
 
     <div class="md:col-span-2">
         <x-input-label for="name" value="Nombre *" />

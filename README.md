@@ -57,3 +57,21 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Seguridad y servicios web
+
+- El inicio de sesión limita los intentos fallidos. Las operaciones administrativas requieren el rol de administrador.
+- La API propia es de solo lectura y requiere un token Bearer. Configura `INVENTORY_API_TOKEN` en `.env` con un valor aleatorio (por ejemplo, genera uno con `php -r "echo bin2hex(random_bytes(32)), PHP_EOL;"`). No publiques ni incluyas el token en el repositorio. Usa HTTPS en producción.
+- La API limita el acceso a 60 solicitudes por minuto por dirección IP. Cambiar el token de `.env` lo rota para todos sus consumidores.
+- La búsqueda externa consulta Open Food Facts sin costo ni API key. En los formularios de alta/edición, ingresa un SKU numérico de 8 a 14 dígitos y usa **Buscar datos por código de barras**; revisa los datos antes de guardar. La consulta tiene un límite de 10 solicitudes por minuto y está disponible solo para administradores autenticados.
+
+### Endpoints de la API propia
+
+Envía el valor de `INVENTORY_API_TOKEN` en el encabezado `Authorization` con el esquema Bearer, y añade `Accept: application/json` en cada solicitud. Las listas están paginadas (20 registros por página).
+
+| Método | Endpoint | Respuesta |
+| --- | --- | --- |
+| `GET` | `/api/v1/products` | Productos con su categoría |
+| `GET` | `/api/v1/products/{id}` | Detalle de un producto |
+| `GET` | `/api/v1/categories` | Categorías |
+| `GET` | `/api/v1/movements` | Movimientos con producto y usuario |
