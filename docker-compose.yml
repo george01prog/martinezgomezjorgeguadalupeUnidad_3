@@ -1,0 +1,30 @@
+services:
+  app:
+    build: .
+    image: inventario-app:latest
+    ports:
+      - "80:80"
+    env_file: .env.docker
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+
+  db:
+    image: mysql:8.0
+    env_file: .env.docker
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    restart: always
+
+volumes:
+  dbdata:
